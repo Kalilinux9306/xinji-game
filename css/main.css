@@ -1,0 +1,1191 @@
+/* 全局重置与字体 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', 'STSong', serif;
+    background: #e0d5c5;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* 游戏容器 */
+#game-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 层级 */
+#scene-layer {
+    display: none;
+}
+
+#atmosphere-layer {
+    display: none;
+}
+
+/* 小说阅读区域 - 信纸 */
+#novel-reader {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 92%;
+    max-width: 700px;
+    height: 88vh;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    background: #f0e6d2;
+    box-shadow:
+        0 1px 1px rgba(0,0,0,0.08),
+        0 2px 2px rgba(0,0,0,0.06),
+        0 4px 4px rgba(0,0,0,0.04),
+        0 8px 8px rgba(0,0,0,0.02);
+    overflow: hidden;
+}
+
+/* 信纸横线纹理 */
+#novel-reader::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 39px,
+            rgba(0,0,0,0.04) 39px,
+            rgba(0,0,0,0.04) 40px
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* 外边框装饰 */
+#novel-reader::after {
+    content: '';
+    position: absolute;
+    top: 12px; left: 12px; right: 12px; bottom: 12px;
+    border: 1px solid rgba(0,0,0,0.06);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* 章节标题 */
+#chapter-title {
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #5d4037;
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeInParagraph 0.6s ease forwards;
+}
+
+/* 小说正文容器 */
+#novel-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 28px;
+    position: relative;
+    z-index: 1;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+/* 隐藏滚动条 */
+#novel-content {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+#novel-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* 段落基础 */
+.novel-para {
+    font-size: 1.05rem;
+    line-height: 2.0;
+    color: #3d2b1f;
+    text-indent: 2em;
+    margin-bottom: 10px;
+    opacity: 0;
+    animation: fadeInParagraph 0.5s ease forwards;
+    position: relative;
+}
+
+/* 对话段落 */
+.novel-dialogue {
+    font-size: 1.05rem;
+    line-height: 2.0;
+    color: #3d2b1f;
+    margin-bottom: 10px;
+    opacity: 0;
+    animation: fadeInParagraph 0.5s ease forwards;
+}
+
+.novel-dialogue::before {
+    content: attr(data-name);
+    font-weight: 600;
+    color: #5d4037;
+    margin-right: 0.5em;
+}
+
+/* 内心独白 */
+.novel-thought {
+    font-style: italic;
+    color: #6b5344;
+    font-size: 1.0rem;
+    text-indent: 0;
+    padding-left: 1em;
+    border-left: 2px solid rgba(0,0,0,0.08);
+    margin-left: 0.5em;
+}
+
+/* 场景描述 */
+.novel-scene-desc {
+    font-size: 1.0rem;
+    color: #5d4037;
+    text-indent: 0;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    margin-bottom: 12px;
+}
+
+/* 消息/微信对话 */
+.novel-chat {
+    font-size: 1.0rem;
+    color: #5d4037;
+    background: rgba(255,255,255,0.35);
+    padding: 10px 16px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    text-indent: 0;
+    position: relative;
+}
+
+.novel-chat::before {
+    content: '「';
+    color: rgba(0,0,0,0.2);
+}
+.novel-chat::after {
+    content: '」';
+    color: rgba(0,0,0,0.2);
+}
+
+.novel-chat-sender {
+    font-size: 0.85rem;
+    color: rgba(0,0,0,0.3);
+    margin-bottom: 4px;
+    text-indent: 0;
+}
+
+/* 打字中光标 */
+.typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: #3d2b1f;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes fadeInParagraph {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 选项区域 */
+#choice-area {
+    padding: 16px 28px 24px 28px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 35vh;
+    overflow-y: auto;
+}
+
+#choice-area.hidden {
+    display: none;
+}
+
+.choice-btn {
+    width: 100%;
+    padding: 14px 20px;
+    border: 1.5px solid rgba(0,0,0,0.08);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.45);
+    font-family: inherit;
+    font-size: 1.0rem;
+    color: #3d2b1f;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    line-height: 1.6;
+    position: relative;
+    overflow: hidden;
+}
+
+.choice-btn:hover {
+    background: rgba(255,255,255,0.7);
+    border-color: rgba(0,0,0,0.12);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.choice-btn:active {
+    transform: translateX(2px);
+    background: rgba(255,255,255,0.5);
+}
+
+/* 点击提示 */
+#tap-hint {
+    position: absolute;
+    bottom: 12px;
+    right: 20px;
+    font-size: 0.8rem;
+    color: rgba(0,0,0,0.25);
+    letter-spacing: 0.1em;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#tap-hint.hidden {
+    display: none;
+}
+
+/* 顶部栏 */
+#top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+#top-bar > * {
+    pointer-events: auto;
+}
+
+#mood-indicator {
+    font-size: 0.85rem;
+    color: rgba(0,0,0,0.35);
+    letter-spacing: 0.1em;
+}
+
+#btn-menu {
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #5d4037;
+    transition: all 0.2s;
+}
+
+#btn-menu:hover {
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* 屏幕切换 */
+.screen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: opacity 0.4s ease;
+    background: #f0e6d2;
+    background-image:
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 39px,
+            rgba(0,0,0,0.04) 39px,
+            rgba(0,0,0,0.04) 40px
+        );
+}
+
+.screen.hidden {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 视角选择 */
+#perspective-select h1 {
+    font-size: 2.8rem;
+    font-weight: 600;
+    color: #5d4037;
+    letter-spacing: 0.4em;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+#perspective-select .subtitle {
+    font-size: 1.0rem;
+    color: rgba(93, 64, 55, 0.5);
+    letter-spacing: 0.3em;
+    margin-bottom: 40px;
+}
+
+.perspective-options {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.perspective-btn {
+    width: 280px;
+    padding: 20px 28px;
+    border: 1.5px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.35);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    box-shadow:
+        0 1px 1px rgba(0,0,0,0.04),
+        0 2px 2px rgba(0,0,0,0.02);
+}
+
+.perspective-btn:hover {
+    border-color: rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+    box-shadow:
+        0 6px 20px rgba(0,0,0,0.06),
+        0 0 30px rgba(139, 90, 43, 0.06);
+    background: rgba(255,255,255,0.55);
+}
+
+.perspective-btn .label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #5d4037;
+    letter-spacing: 0.15em;
+}
+
+.perspective-btn .desc {
+    font-size: 0.82rem;
+    color: #6b5344;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* ===== 收集册按钮 ===== */
+.collection-btn {
+    margin-top: 20px;
+    width: 280px;
+    padding: 16px 24px;
+    border: 1.5px solid rgba(139, 90, 43, 0.2);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.collection-btn:hover {
+    border-color: rgba(139, 90, 43, 0.4);
+    background: rgba(255, 255, 255, 0.45);
+    transform: translateY(-1px);
+}
+
+.collection-btn .label {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #7a5c4a;
+    letter-spacing: 0.1em;
+}
+
+.collection-btn .desc {
+    font-size: 0.75rem;
+    color: rgba(122, 92, 74, 0.6);
+    text-align: center;
+}
+
+/* ===== 收集册模态框 ===== */
+#collection-modal {
+    background: rgba(240, 230, 210, 0.95);
+    backdrop-filter: blur(8px);
+}
+
+.collection-panel {
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 32px;
+    background: #f5ebda;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.collection-panel h2 {
+    font-size: 1.6rem;
+    color: #5d4037;
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+}
+
+.collection-progress {
+    margin-bottom: 24px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(139, 90, 43, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8d6e63, #a1887f);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+    width: 0%;
+}
+
+.progress-text {
+    font-size: 0.85rem;
+    color: rgba(93, 64, 55, 0.6);
+    letter-spacing: 0.05em;
+}
+
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.ending-card {
+    padding: 20px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1.5px solid rgba(139, 90, 43, 0.1);
+    transition: all 0.3s ease;
+}
+
+.ending-card.locked {
+    opacity: 0.5;
+    filter: grayscale(0.6);
+}
+
+.ending-card.unlocked {
+    border-color: rgba(139, 90, 43, 0.3);
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 2px 8px rgba(139, 90, 43, 0.08);
+}
+
+.ending-card.unlocked:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(139, 90, 43, 0.12);
+}
+
+.card-frame {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(139, 90, 43, 0.08);
+    border: 2px solid rgba(139, 90, 43, 0.15);
+}
+
+.ending-card.unlocked .card-frame {
+    background: rgba(139, 90, 43, 0.12);
+    border-color: rgba(139, 90, 43, 0.3);
+}
+
+.card-icon {
+    font-size: 1.5rem;
+    color: #7a5c4a;
+}
+
+.ending-card h3 {
+    font-size: 1.0rem;
+    color: #5d4037;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+}
+
+.card-hint {
+    font-size: 0.75rem;
+    color: rgba(93, 64, 55, 0.5);
+    line-height: 1.4;
+}
+
+.ending-card.unlocked .card-hint {
+    color: rgba(93, 64, 55, 0.7);
+}
+
+#btn-close-collection {
+    padding: 10px 32px;
+    border: 1.5px solid rgba(139, 90, 43, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.4);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #5d4037;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#btn-close-collection:hover {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(139, 90, 43, 0.4);
+}
+
+/* ===== 首次引导 ===== */
+#tutorial-overlay {
+    background: rgba(240, 230, 210, 0.96);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+}
+
+.tutorial-panel {
+    text-align: center;
+    padding: 40px;
+    max-width: 420px;
+}
+
+.tutorial-step {
+    animation: fadeInParagraph 0.5s ease forwards;
+}
+
+.tutorial-step.hidden {
+    display: none;
+}
+
+.tutorial-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.tutorial-step h3 {
+    font-size: 1.3rem;
+    color: #5d4037;
+    margin-bottom: 12px;
+    letter-spacing: 0.1em;
+}
+
+.tutorial-step p {
+    font-size: 1.0rem;
+    color: #6b5344;
+    line-height: 1.8;
+    margin-bottom: 32px;
+}
+
+#btn-tutorial-next {
+    padding: 12px 40px;
+    border: 1.5px solid rgba(139, 90, 43, 0.25);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    font-family: inherit;
+    font-size: 1.0rem;
+    color: #5d4037;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.1em;
+}
+
+#btn-tutorial-next:hover {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(139, 90, 43, 0.45);
+}
+
+/* ===== 情感曲线 ===== */
+#emotion-curve-modal {
+    background: rgba(240, 230, 210, 0.92);
+    backdrop-filter: blur(6px);
+    z-index: 150;
+}
+
+.emotion-panel {
+    width: 90%;
+    max-width: 480px;
+    padding: 28px;
+    background: #f5ebda;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.emotion-panel h3 {
+    font-size: 1.2rem;
+    color: #5d4037;
+    letter-spacing: 0.15em;
+    margin-bottom: 20px;
+}
+
+.emotion-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 24px;
+    height: 160px;
+    margin-bottom: 16px;
+    padding: 0 20px;
+}
+
+.emotion-bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.emotion-bar {
+    width: 100%;
+    max-width: 48px;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.8s ease;
+    position: relative;
+    min-height: 4px;
+}
+
+.emotion-bar::after {
+    content: attr(data-value);
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: #6b5344;
+    white-space: nowrap;
+}
+
+.emotion-bar-label {
+    font-size: 0.75rem;
+    color: rgba(93, 64, 55, 0.6);
+}
+
+.emotion-legend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    font-size: 0.8rem;
+    color: #6b5344;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-dot.affection { background: #c62828; }
+.legend-dot.trust { background: #2e7d32; }
+.legend-dot.initiative { background: #1565c0; }
+.legend-dot.understanding { background: #f9a825; }
+
+.emotion-bar.affection { background: linear-gradient(180deg, #ef5350, #c62828); }
+.emotion-bar.trust { background: linear-gradient(180deg, #66bb6a, #2e7d32); }
+.emotion-bar.initiative { background: linear-gradient(180deg, #42a5f5, #1565c0); }
+.emotion-bar.understanding { background: linear-gradient(180deg, #ffca28, #f9a825); }
+
+#btn-close-emotion {
+    padding: 10px 32px;
+    border: 1.5px solid rgba(139, 90, 43, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.4);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #5d4037;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#btn-close-emotion:hover {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(139, 90, 43, 0.4);
+}
+
+/* ===== 日记系统 ===== */
+
+.diary-container {
+    margin: 20px 28px;
+    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    position: relative;
+    z-index: 1;
+    animation: fadeInParagraph 0.6s ease forwards;
+}
+
+.diary-title {
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(93, 64, 55, 0.5);
+    letter-spacing: 0.3em;
+    margin-bottom: 12px;
+    font-weight: 400;
+}
+
+.diary-para {
+    font-size: 0.95rem;
+    line-height: 2.0;
+    color: #5d4037;
+    text-indent: 0;
+    padding-left: 1em;
+    border-left: 2px solid rgba(139, 110, 99, 0.2);
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+.diary-end {
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(93, 64, 55, 0.35);
+    margin-top: 16px;
+    letter-spacing: 0.2em;
+}
+
+/* ===== 设置菜单 ===== */
+
+#settings-menu {
+    background: rgba(240, 230, 210, 0.92);
+    backdrop-filter: blur(4px);
+}
+
+.menu-panel {
+    width: 280px;
+    padding: 32px;
+    background: #f5ebda;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.menu-panel h2 {
+    font-size: 1.4rem;
+    color: #5d4037;
+    margin-bottom: 24px;
+    letter-spacing: 0.2em;
+}
+
+.menu-panel button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.4);
+    font-family: inherit;
+    font-size: 1.0rem;
+    color: #5d4037;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu-panel button:hover {
+    background: rgba(255,255,255,0.7);
+    border-color: rgba(0,0,0,0.12);
+}
+
+/* ===== 聊天消息 ===== */
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+    margin: 8px 0;
+}
+
+.chat-bubble {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+    word-break: break-all;
+    animation: fadeInParagraph 0.3s ease forwards;
+}
+
+.chat-self {
+    align-self: flex-end;
+    background: #95ec69;
+    color: #1a1a1a;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-other {
+    align-self: flex-start;
+    background: #ffffff;
+    color: #1a1a1a;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.chat-sender-label {
+    font-size: 0.7rem;
+    color: rgba(0,0,0,0.35);
+    margin-bottom: 2px;
+    padding-left: 2px;
+}
+
+.chat-text {
+    display: inline;
+}
+
+.chat-typing {
+    align-self: flex-start;
+    background: #ffffff;
+    padding: 10px 14px;
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    display: flex;
+    gap: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    animation: fadeInParagraph 0.3s ease forwards;
+}
+
+.typing-dot {
+    width: 7px;
+    height: 7px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* ===== 关系状态提示 ===== */
+
+.relationship-hint {
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(139, 90, 43, 0.5);
+    letter-spacing: 0.15em;
+    margin: 8px auto 16px auto;
+    padding: 8px 16px;
+    background: rgba(139, 90, 43, 0.04);
+    border-radius: 20px;
+    display: table;
+    opacity: 0;
+    animation: fadeInParagraph 0.8s ease forwards;
+}
+
+/* ===== 记忆碎片 ===== */
+
+.memory-title {
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(61, 43, 31, 0.35);
+    letter-spacing: 0.3em;
+    margin: 20px 0 10px 0;
+    font-weight: 400;
+    opacity: 0;
+    animation: fadeInParagraph 0.6s ease forwards;
+}
+
+.memory-fragment {
+    font-size: 0.92rem;
+    line-height: 2.0;
+    color: #6b5344;
+    text-indent: 0;
+    padding-left: 1.2em;
+    padding-right: 1.2em;
+    margin-bottom: 6px;
+    font-style: italic;
+    opacity: 0;
+    animation: fadeInParagraph 0.5s ease forwards;
+    position: relative;
+    border-left: 2px solid rgba(139, 90, 43, 0.12);
+    margin-left: 0.8em;
+}
+
+/* ===== 跨视角真相段落 ===== */
+
+.truth-title {
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(139, 90, 43, 0.4);
+    letter-spacing: 0.3em;
+    margin: 18px 0 8px 0;
+    font-weight: 400;
+    opacity: 0;
+    animation: fadeInParagraph 0.6s ease forwards;
+}
+
+.truth-para {
+    font-size: 0.95rem;
+    line-height: 2.0;
+    color: #7a5c4a;
+    text-indent: 0;
+    padding: 8px 14px;
+    margin: 4px 0 4px 0.8em;
+    font-style: italic;
+    opacity: 0;
+    animation: fadeInParagraph 0.5s ease forwards;
+    position: relative;
+    border-left: 2px solid rgba(139, 90, 43, 0.2);
+    background: rgba(139, 90, 43, 0.03);
+}
+
+/* ===== 响应式适配 ===== */
+
+@media (max-width: 768px) {
+    #novel-reader {
+        width: 96%;
+        height: 92vh;
+        padding: 16px 0;
+    }
+
+    #chapter-title {
+        font-size: 1.15rem;
+        margin-bottom: 12px;
+    }
+
+    #novel-content {
+        padding: 0 20px;
+    }
+
+    .novel-para,
+    .novel-dialogue {
+        font-size: 1.0rem;
+        line-height: 1.85;
+    }
+
+    .novel-thought {
+        font-size: 0.95rem;
+    }
+
+    #choice-area {
+        padding: 12px 20px 20px 20px;
+        gap: 8px;
+    }
+
+    .choice-btn {
+        padding: 16px 18px;
+        font-size: 1.0rem;
+        min-height: 52px;
+        touch-action: manipulation;
+    }
+
+    .perspective-btn,
+    .collection-btn {
+        width: 85vw;
+        max-width: 320px;
+    }
+
+    #perspective-select h1 {
+        font-size: 2.2rem;
+    }
+
+    .collection-panel {
+        width: 92%;
+        padding: 24px 20px;
+    }
+
+    .emotion-panel {
+        width: 92%;
+        padding: 24px 20px;
+    }
+
+    .tutorial-panel {
+        padding: 32px 24px;
+    }
+
+    .menu-panel {
+        width: 80vw;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-family: 'Noto Serif SC', 'Source Han Serif SC', 'PingFang SC', 'Microsoft YaHei', serif;
+    }
+
+    #novel-reader {
+        width: 100%;
+        height: 100vh;
+        max-width: none;
+        border-radius: 0;
+        padding: 12px 0;
+    }
+
+    #novel-reader::after {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+    }
+
+    #chapter-title {
+        font-size: 1.1rem;
+        padding: 0 16px;
+    }
+
+    #novel-content {
+        padding: 0 16px;
+    }
+
+    .novel-para,
+    .novel-dialogue {
+        font-size: 0.95rem;
+        line-height: 1.8;
+        margin-bottom: 8px;
+    }
+
+    .novel-scene-desc {
+        font-size: 0.9rem;
+    }
+
+    .novel-chat {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+
+    #choice-area {
+        padding: 10px 16px 16px 16px;
+        gap: 8px;
+        max-height: 40vh;
+    }
+
+    .choice-btn {
+        padding: 14px 16px;
+        font-size: 0.95rem;
+        min-height: 48px;
+        border-radius: 10px;
+    }
+
+    #top-bar {
+        padding: 8px 12px;
+    }
+
+    #btn-menu {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    #perspective-select h1 {
+        font-size: 1.8rem;
+        letter-spacing: 0.3em;
+    }
+
+    #perspective-select .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 28px;
+    }
+
+    .perspective-btn,
+    .collection-btn {
+        width: 85vw;
+        padding: 16px 20px;
+    }
+
+    .perspective-btn .label {
+        font-size: 1.1rem;
+    }
+
+    .collection-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .ending-card {
+        padding: 16px 12px;
+    }
+
+    .emotion-chart {
+        gap: 12px;
+        height: 140px;
+    }
+
+    .tutorial-icon {
+        font-size: 2.4rem;
+    }
+
+    .tutorial-step h3 {
+        font-size: 1.15rem;
+    }
+
+    .tutorial-step p {
+        font-size: 0.9rem;
+        margin-bottom: 24px;
+    }
+
+    .memory-fragment {
+        font-size: 0.85rem;
+        padding-left: 0.8em;
+        padding-right: 0.8em;
+    }
+
+    .diary-para {
+        font-size: 0.85rem;
+    }
+
+    .relationship-hint {
+        font-size: 0.75rem;
+    }
+}

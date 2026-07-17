@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心迹 - 互动叙事</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/scenes.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 情绪氛围背景层 -->
+        <div id="scene-layer"></div>
+        <div id="atmosphere-layer"></div>
+
+        <!-- 小说阅读区域 -->
+        <div id="novel-reader">
+            <div id="chapter-title"></div>
+            <div id="novel-content"></div>
+            <div id="choice-area" class="hidden"></div>
+            <div id="tap-hint" class="hidden">点击继续</div>
+        </div>
+
+        <!-- 顶部栏 -->
+        <div id="top-bar">
+            <div id="mood-indicator"></div>
+            <button id="btn-menu">☰</button>
+        </div>
+
+        <!-- 设置菜单 -->
+        <div id="settings-menu" class="screen hidden">
+            <div class="menu-panel">
+                <h2>菜单</h2>
+                <button id="btn-save">保存进度</button>
+                <button id="btn-load">读取进度</button>
+                <button id="btn-restart">重新开始</button>
+                <button id="btn-close-menu">返回</button>
+            </div>
+        </div>
+
+        <!-- 视角选择 -->
+        <div id="perspective-select" class="screen">
+            <h1>心迹</h1>
+            <p class="subtitle">选择你的视角</p>
+            <div class="perspective-options">
+                <button id="btn-male" class="perspective-btn">
+                    <span class="label">男生视角</span>
+                    <span class="desc">体验心动、紧张、笨拙与成长</span>
+                </button>
+                <button id="btn-female" class="perspective-btn">
+                    <span class="label">女生视角</span>
+                    <span class="desc">体验期待、试探、细腻与勇敢</span>
+                </button>
+            </div>
+            <button id="btn-collection" class="collection-btn">
+                <span class="label">心迹图鉴</span>
+                <span class="desc">查看已解锁的结局与收集进度</span>
+            </button>
+        </div>
+
+        <!-- 结局收集册 -->
+        <div id="collection-modal" class="screen hidden">
+            <div class="collection-panel">
+                <h2>心迹图鉴</h2>
+                <div class="collection-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="collection-progress-fill"></div>
+                    </div>
+                    <p class="progress-text" id="collection-progress-text">已收集 0 / 4</p>
+                </div>
+                <div class="collection-grid" id="collection-grid">
+                    <div class="ending-card locked" data-ending="he">
+                        <div class="card-frame">
+                            <div class="card-icon">?</div>
+                        </div>
+                        <h3>Happy Ending</h3>
+                        <p class="card-hint">好感度高于45，信任高于25</p>
+                    </div>
+                    <div class="ending-card locked" data-ending="be1">
+                        <div class="card-frame">
+                            <div class="card-icon">?</div>
+                        </div>
+                        <h3>沉默的螺旋</h3>
+                        <p class="card-hint">信任崩塌后的遗憾</p>
+                    </div>
+                    <div class="ending-card locked" data-ending="be2">
+                        <div class="card-frame">
+                            <div class="card-icon">?</div>
+                        </div>
+                        <h3>陌生人</h3>
+                        <p class="card-hint">好感或信任跌至谷底</p>
+                    </div>
+                    <div class="ending-card locked" data-ending="hidden">
+                        <div class="card-frame">
+                            <div class="card-icon">?</div>
+                        </div>
+                        <h3>朋友以上</h3>
+                        <p class="card-hint">最痛的一种结局</p>
+                    </div>
+                </div>
+                <button id="btn-close-collection">返回</button>
+            </div>
+        </div>
+
+        <!-- 首次引导 -->
+        <div id="tutorial-overlay" class="screen hidden">
+            <div class="tutorial-panel">
+                <div class="tutorial-step" id="tutorial-step-1">
+                    <div class="tutorial-icon">👆</div>
+                    <h3>点击屏幕加速</h3>
+                    <p>文字正在逐字显示时，点击屏幕任意位置可立刻显示完整内容</p>
+                </div>
+                <div class="tutorial-step hidden" id="tutorial-step-2">
+                    <div class="tutorial-icon">💭</div>
+                    <h3>每个选择都重要</h3>
+                    <p>你的每一个选择都会影响好感、信任、主动和理解四个维度，最终决定故事走向</p>
+                </div>
+                <div class="tutorial-step hidden" id="tutorial-step-3">
+                    <div class="tutorial-icon">🔄</div>
+                    <h3>双视角叙事</h3>
+                    <p>通关一个视角后，另一个视角会揭示隐藏的真相。两个视角相辅相成</p>
+                </div>
+                <button id="btn-tutorial-next">下一步</button>
+            </div>
+        </div>
+
+        <!-- 章节情感曲线 -->
+        <div id="emotion-curve-modal" class="screen hidden">
+            <div class="emotion-panel">
+                <h3>本章情感变化</h3>
+                <div class="emotion-chart" id="emotion-chart"></div>
+                <div class="emotion-legend">
+                    <span class="legend-item"><span class="legend-dot affection"></span>好感</span>
+                    <span class="legend-item"><span class="legend-dot trust"></span>信任</span>
+                    <span class="legend-item"><span class="legend-dot initiative"></span>主动</span>
+                    <span class="legend-item"><span class="legend-dot understanding"></span>理解</span>
+                </div>
+                <button id="btn-close-emotion">继续</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data/variables.js"></script>
+    <script src="js/data/chapters/chapter1.js"></script>
+    <script src="js/data/chapters/chapter2.js"></script>
+    <script src="js/data/chapters/chapter3.js"></script>
+    <script src="js/data/chapters/chapter4.js"></script>
+    <script src="js/data/chapters/chapter5.js"></script>
+    <script src="js/data/chapters/chapter6.js"></script>
+    <script src="js/data/chapters/chapter7.js"></script>
+    <script src="js/data/chapters/chapter8.js"></script>
+    <script src="js/engine/VariableSystem.js"></script>
+    <script src="js/engine/SaveSystem.js"></script>
+    <script src="js/engine/CrossPerspectiveSystem.js"></script>
+    <script src="js/engine/AudioManager.js"></script>
+    <script src="js/engine/DialogueSystem.js"></script>
+    <script src="js/engine/ChoiceSystem.js"></script>
+    <script src="js/engine/SceneManager.js"></script>
+    <script src="js/engine/GameEngine.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
