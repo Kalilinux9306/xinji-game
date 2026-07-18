@@ -1,4 +1,3 @@
-/* 淡入淡出 */
 .fade-in {
     animation: fadeIn 0.8s ease forwards;
 }
@@ -17,7 +16,6 @@
     to { opacity: 0; }
 }
 
-/* 心跳效果（告白场景） */
 .heartbeat {
     animation: heartbeat 1.2s ease-in-out infinite;
 }
@@ -30,7 +28,6 @@
     70% { transform: scale(1); }
 }
 
-/* 打字机光标 */
 .typing-cursor::after {
     content: '|';
     animation: blink 1s step-end infinite;
@@ -40,7 +37,6 @@
     50% { opacity: 0; }
 }
 
-/* 场景切换 */
 .scene-transition {
     position: fixed;
     top: 0; left: 0;
@@ -50,7 +46,6 @@
     pointer-events: none;
 }
 
-/* 轻微浮动 */
 .float {
     animation: float 3s ease-in-out infinite;
 }
@@ -58,4 +53,213 @@
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
+}
+
+.scene-transition-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(250, 248, 245, 0.95);
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.choice-btn {
+    animation: choiceFadeIn 0.4s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@keyframes choiceFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.choice-hover {
+    transform: translateX(8px);
+    box-shadow: 4px 4px 12px rgba(139, 90, 43, 0.15);
+}
+
+.choice-click {
+    transform: scale(0.96);
+    opacity: 0.7;
+}
+
+.choices-enter {
+    animation: choicesSlideUp 0.5s ease-out;
+}
+
+@keyframes choicesSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.choices-exit {
+    animation: choicesSlideDown 0.3s ease-in forwards;
+}
+
+@keyframes choicesSlideDown {
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+.type-char {
+    animation: charAppear 0.15s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes charAppear {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mood-fade-in {
+    animation: moodFadeIn 0.6s ease-out;
+}
+
+@keyframes moodFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.achievement-popup {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(255, 182, 193, 0.5);
+    border-radius: 16px;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 1000;
+    opacity: 0;
+    box-shadow: 0 8px 32px rgba(139, 90, 43, 0.2);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.achievement-popup-show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.achievement-icon {
+    font-size: 36px;
+    animation: iconBounce 0.6s ease-out;
+}
+
+@keyframes iconBounce {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.achievement-title {
+    font-size: 0.85rem;
+    color: rgba(93, 64, 55, 0.6);
+    margin-bottom: 4px;
+}
+
+.achievement-name {
+    font-size: 1.1rem;
+    color: #5d4037;
+    font-weight: 600;
+}
+
+.chapter-title-enter {
+    animation: titleSlideIn 0.8s ease-out;
+}
+
+@keyframes titleSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.novel-para {
+    animation: paraFadeIn 0.5s ease-out;
+}
+
+@keyframes paraFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.truth-para {
+    animation: truthGlow 0.8s ease-out;
+}
+
+@keyframes truthGlow {
+    0% {
+        opacity: 0;
+        text-shadow: 0 0 20px rgba(255, 182, 193, 0.5);
+    }
+    50% {
+        text-shadow: 0 0 30px rgba(255, 182, 193, 0.8);
+    }
+    100% {
+        opacity: 1;
+        text-shadow: none;
+    }
+}
+
+.relationship-hint {
+    animation: hintPulse 2s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+.diary-para {
+    animation: diaryWrite 0.3s ease-out;
+}
+
+@keyframes diaryWrite {
+    from {
+        opacity: 0;
+        color: rgba(93, 64, 55, 0.3);
+    }
+    to {
+        opacity: 1;
+        color: inherit;
+    }
 }
