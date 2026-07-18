@@ -10,11 +10,9 @@
 </head>
 <body>
     <div id="game-container">
-        <!-- 情绪氛围背景层 -->
         <div id="scene-layer"></div>
         <div id="atmosphere-layer"></div>
 
-        <!-- 小说阅读区域 -->
         <div id="novel-reader">
             <div id="chapter-title"></div>
             <div id="novel-content"></div>
@@ -22,16 +20,15 @@
             <div id="tap-hint" class="hidden">点击继续</div>
         </div>
 
-        <!-- 顶部栏 -->
         <div id="top-bar">
             <div id="mood-indicator"></div>
             <button id="btn-menu">☰</button>
         </div>
 
-        <!-- 设置菜单 -->
         <div id="settings-menu" class="screen hidden">
             <div class="menu-panel">
                 <h2>菜单</h2>
+                <button id="btn-music">🔊 音乐</button>
                 <button id="btn-save">保存进度</button>
                 <button id="btn-load">读取进度</button>
                 <button id="btn-restart">重新开始</button>
@@ -39,7 +36,6 @@
             </div>
         </div>
 
-        <!-- 视角选择 -->
         <div id="perspective-select" class="screen">
             <h1>心迹</h1>
             <p class="subtitle">选择你的视角</p>
@@ -55,11 +51,10 @@
             </div>
             <button id="btn-collection" class="collection-btn">
                 <span class="label">心迹图鉴</span>
-                <span class="desc">查看已解锁的结局与收集进度</span>
+                <span class="desc">查看已解锁的结局与成就</span>
             </button>
         </div>
 
-        <!-- 结局收集册 -->
         <div id="collection-modal" class="screen hidden">
             <div class="collection-panel">
                 <h2>心迹图鉴</h2>
@@ -67,43 +62,106 @@
                     <div class="progress-bar">
                         <div class="progress-fill" id="collection-progress-fill"></div>
                     </div>
-                    <p class="progress-text" id="collection-progress-text">已收集 0 / 4</p>
+                    <p class="progress-text" id="collection-progress-text">已收集 0 / 12</p>
                 </div>
-                <div class="collection-grid" id="collection-grid">
-                    <div class="ending-card locked" data-ending="he">
-                        <div class="card-frame">
-                            <div class="card-icon">?</div>
+                <div class="collection-section">
+                    <h3 class="section-title">结局收集</h3>
+                    <div class="collection-grid" id="collection-grid">
+                        <div class="ending-card locked" data-ending="he">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>Happy Ending</h3>
+                            <p class="card-hint">好感度高于45，信任高于25</p>
                         </div>
-                        <h3>Happy Ending</h3>
-                        <p class="card-hint">好感度高于45，信任高于25</p>
+                        <div class="ending-card locked" data-ending="be1">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>沉默的螺旋</h3>
+                            <p class="card-hint">信任崩塌后的遗憾</p>
+                        </div>
+                        <div class="ending-card locked" data-ending="be2">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>陌生人</h3>
+                            <p class="card-hint">好感或信任跌至谷底</p>
+                        </div>
+                        <div class="ending-card locked" data-ending="hidden">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>朋友以上</h3>
+                            <p class="card-hint">最痛的一种结局</p>
+                        </div>
                     </div>
-                    <div class="ending-card locked" data-ending="be1">
-                        <div class="card-frame">
-                            <div class="card-icon">?</div>
+                </div>
+                <div class="collection-section">
+                    <h3 class="section-title">成就收集</h3>
+                    <div class="collection-grid" id="achievement-grid">
+                        <div class="achievement-card locked" data-achievement="first_play">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>初次相遇</h3>
+                            <p class="card-hint">开始你的第一次游玩</p>
                         </div>
-                        <h3>沉默的螺旋</h3>
-                        <p class="card-hint">信任崩塌后的遗憾</p>
-                    </div>
-                    <div class="ending-card locked" data-ending="be2">
-                        <div class="card-frame">
-                            <div class="card-icon">?</div>
+                        <div class="achievement-card locked" data-achievement="chapter3">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>心动时刻</h3>
+                            <p class="card-hint">完成第三章</p>
                         </div>
-                        <h3>陌生人</h3>
-                        <p class="card-hint">好感或信任跌至谷底</p>
-                    </div>
-                    <div class="ending-card locked" data-ending="hidden">
-                        <div class="card-frame">
-                            <div class="card-icon">?</div>
+                        <div class="achievement-card locked" data-achievement="high_affection">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>深情厚爱</h3>
+                            <p class="card-hint">好感度达到45以上</p>
                         </div>
-                        <h3>朋友以上</h3>
-                        <p class="card-hint">最痛的一种结局</p>
+                        <div class="achievement-card locked" data-achievement="high_trust">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>彼此信任</h3>
+                            <p class="card-hint">信任度达到25以上</p>
+                        </div>
+                        <div class="achievement-card locked" data-achievement="both_perspectives">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>双面人生</h3>
+                            <p class="card-hint">通关两个视角</p>
+                        </div>
+                        <div class="achievement-card locked" data-achievement="he">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>圆满结局</h3>
+                            <p class="card-hint">达成Happy Ending</p>
+                        </div>
+                        <div class="achievement-card locked" data-achievement="all_endings">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>全结局收集</h3>
+                            <p class="card-hint">收集所有结局</p>
+                        </div>
+                        <div class="achievement-card locked" data-achievement="mutual_match">
+                            <div class="card-frame">
+                                <div class="card-icon">?</div>
+                            </div>
+                            <h3>双向奔赴</h3>
+                            <p class="card-hint">触发双向奔赴彩蛋</p>
+                        </div>
                     </div>
                 </div>
                 <button id="btn-close-collection">返回</button>
             </div>
         </div>
 
-        <!-- 首次引导 -->
         <div id="tutorial-overlay" class="screen hidden">
             <div class="tutorial-panel">
                 <div class="tutorial-step" id="tutorial-step-1">
@@ -125,7 +183,6 @@
             </div>
         </div>
 
-        <!-- 章节情感曲线 -->
         <div id="emotion-curve-modal" class="screen hidden">
             <div class="emotion-panel">
                 <h3>本章情感变化</h3>
