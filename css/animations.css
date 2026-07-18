@@ -118,6 +118,8 @@
 .type-char {
     animation: charAppear 0.15s ease-out forwards;
     opacity: 0;
+    color: inherit;
+    display: inline;
 }
 
 @keyframes charAppear {
