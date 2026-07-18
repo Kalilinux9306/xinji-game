@@ -499,8 +499,7 @@ class GameEngine {
     }
 
     _isChatName(name) {
-        if (!name) return false;
-        return name === '你' || name === '？' || name.includes('消息') || name.includes('微信') || name.includes('闺蜜');
+        return false;
     }
 
     _resolveName(name) {
