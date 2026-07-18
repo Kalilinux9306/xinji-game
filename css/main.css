@@ -567,6 +567,60 @@ body {
     color: rgba(93, 64, 55, 0.7);
 }
 
+.collection-section {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 0.95rem;
+    color: rgba(93, 64, 55, 0.6);
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+    text-align: left;
+    padding-left: 4px;
+}
+
+.achievement-card {
+    padding: 16px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1.5px solid rgba(255, 182, 193, 0.15);
+    transition: all 0.3s ease;
+}
+
+.achievement-card.locked {
+    opacity: 0.5;
+    filter: grayscale(0.6);
+}
+
+.achievement-card.unlocked {
+    border-color: rgba(255, 182, 193, 0.4);
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 8px rgba(255, 182, 193, 0.1);
+}
+
+.achievement-card.unlocked:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(255, 182, 193, 0.15);
+}
+
+.achievement-card .card-frame {
+    background: rgba(255, 182, 193, 0.1);
+    border-color: rgba(255, 182, 193, 0.25);
+}
+
+.achievement-card.unlocked .card-frame {
+    background: rgba(255, 182, 193, 0.15);
+    border-color: rgba(255, 182, 193, 0.4);
+}
+
+.achievement-card h3 {
+    font-size: 0.95rem;
+    color: #7a5c4a;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+}
+
 #btn-close-collection {
     padding: 10px 32px;
     border: 1.5px solid rgba(139, 90, 43, 0.2);
