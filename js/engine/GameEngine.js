@@ -20,20 +20,22 @@ class GameEngine {
         this.crossPerspective = new CrossPerspectiveSystem();
         this.audio = new AudioManager();
         this.scenes = new SceneManager('scene-layer');
-        this.dialogue = new DialogueSystem();
-        this.choice = new ChoiceSystem('choice-area');
+        this.dialogue = new DialogueSystem(this.audio);
+        this.choice = new ChoiceSystem('choice-area', this.audio);
 
         this.chapterData = null;
         this.running = false;
-        this._crossFlags = {}; // 当前视角的关键选择标签
-        this._mutualMatch = false; // 双向奔赴是否触发
+        this._crossFlags = {};
+        this._mutualMatch = false;
     }
 
     init() {
         document.getElementById('btn-male').addEventListener('click', () => {
+            this.audio.unlock();
             this.startPerspective('male');
         });
         document.getElementById('btn-female').addEventListener('click', () => {
+            this.audio.unlock();
             this.startPerspective('female');
         });
 
@@ -58,7 +60,15 @@ class GameEngine {
             document.getElementById('settings-menu').classList.remove('hidden');
         });
 
-        // 收集册
+        const btnMusic = document.getElementById('btn-music');
+        if (btnMusic) {
+            btnMusic.addEventListener('click', () => {
+                const isMuted = this.audio.muted;
+                this.audio.setMuted(!isMuted);
+                btnMusic.textContent = isMuted ? '🔊 音乐' : '🔇 静音';
+            });
+        }
+
         document.getElementById('btn-collection').addEventListener('click', () => {
             this._showCollection();
         });
@@ -66,12 +76,10 @@ class GameEngine {
             document.getElementById('collection-modal').classList.add('hidden');
         });
 
-        // 引导
         document.getElementById('btn-tutorial-next').addEventListener('click', () => {
             this._nextTutorialStep();
         });
 
-        // 情感曲线
         document.getElementById('btn-close-emotion').addEventListener('click', () => {
             document.getElementById('emotion-curve-modal').classList.add('hidden');
             if (this._pendingChapterEndCallback) {
@@ -81,7 +89,6 @@ class GameEngine {
             }
         });
 
-        // 首次引导检查
         const saveData = this.save.load();
         if (saveData && saveData.firstTime === false) {
             this.state.firstTime = false;
@@ -92,10 +99,9 @@ class GameEngine {
 
     startPerspective(perspective) {
         this.state.perspective = perspective;
-        this._crossFlags = {}; // 清空当前视角标记，避免跨视角污染
+        this._crossFlags = {};
         document.getElementById('perspective-select').classList.add('hidden');
 
-        // 如果另一个视角已通关，显示跨视角介绍和真相段落
         const other = perspective === 'male' ? 'female' : 'male';
         if (this.crossPerspective.isCompleted(other)) {
             this._showCrossPerspectiveIntro(other);
@@ -110,7 +116,6 @@ class GameEngine {
 
         this.dialogue.clear();
 
-        // 显示跨视角提示标题
         this.dialogue.appendParagraph('', '—— 新的旅程 ——', () => {
             this.dialogue.appendParagraph('', `你已完成${otherName}视角的游玩。`, () => {
                 this.dialogue.appendParagraph('', `在这个视角中，${otherName}的选择会影响你现在的剧情。`, () => {
@@ -143,20 +148,17 @@ class GameEngine {
         this.state.chapter = chapterNum;
         this.state.sceneIndex = 0;
 
-        // 记录章节开始时的变量，用于情感曲线
         this._recordChapterStartVars();
 
         const chapterKey = `chapter${chapterNum}`;
         if (window[chapterKey]) {
             this.chapterData = window[chapterKey][this.state.perspective];
-            // 显示章节标题
             const titleEl = document.getElementById('chapter-title');
             if (titleEl) {
                 titleEl.textContent = this.chapterData.title || '';
             }
             this.dialogue.clear();
 
-            // 显示关系状态提示（从第二章开始）
             if (chapterNum >= 2 && chapterNum < 8) {
                 this._showRelationshipHint(() => {
                     this.runScene(0);
@@ -164,6 +166,9 @@ class GameEngine {
             } else {
                 this.runScene(0);
             }
+
+            this.audio.playBGM(chapterNum);
+            this._checkAchievements();
         } else {
             console.error(`章节 ${chapterNum} 数据未找到`);
         }
@@ -183,7 +188,6 @@ class GameEngine {
         const hintEl = document.createElement('div');
         hintEl.className = 'relationship-hint';
         hintEl.textContent = stateText;
-        // 插入到 chapter-title 之后，novel-content 之前
         const titleEl = document.getElementById('chapter-title');
         const contentEl = document.getElementById('novel-content');
         if (titleEl && titleEl.nextSibling) {
@@ -200,7 +204,6 @@ class GameEngine {
     }
 
     runScene(index) {
-        // 章节结束，显示章节结束界面（含日记）
         if (index === 'chapter_end') {
             this.showChapterEnd();
             return;
@@ -219,30 +222,24 @@ class GameEngine {
             return;
         }
 
-        // 加载场景背景和氛围
         if (scene.visual) {
             this.scenes.loadScene(scene.visual);
         }
 
-        // 清空之前的内容，开始新场景
         this.dialogue.clear();
         this.choice.hide();
 
-        // 执行场景逻辑
         this.executeSceneLogic(scene);
     }
 
     executeSceneLogic(scene) {
-        // 处理第八章自定义名称输入
         if (scene.special === 'name_input') {
             this.handleNameInput(scene);
             return;
         }
 
-        // 准备对话数据（深拷贝以避免修改原始数据）
         let dialogues = scene.dialogue ? [...scene.dialogue] : null;
 
-        // 如果另一个视角已通关，插入跨视角真相段落
         const other = this.state.perspective === 'male' ? 'female' : 'male';
         if (this.crossPerspective.isCompleted(other) && scene.crossTruths) {
             dialogues = this._insertCrossTruths(dialogues, scene.crossTruths);
@@ -269,7 +266,6 @@ class GameEngine {
         const otherFlags = this.crossPerspective.getOtherPerspectiveFlags(this.state.perspective);
         if (!otherFlags || Object.keys(otherFlags).length === 0) return dialogues;
 
-        // 收集所有匹配的真相段落
         const matchedTruths = [];
         crossTruths.forEach(truth => {
             if (otherFlags[truth.flag] === true) {
@@ -285,7 +281,6 @@ class GameEngine {
         dialogues.forEach(d => {
             result.push(d);
 
-            // 在第一段对话后插入所有匹配的真相段落
             if (!truthInserted) {
                 result.push({ name: '', text: '—— 真相 ——', cssClass: 'truth-title' });
                 matchedTruths.forEach(truth => {
@@ -301,9 +296,7 @@ class GameEngine {
     }
 
     handleNameInput(scene) {
-        // 先显示引导文字
         this.showDialogueSequence(scene.dialogue, () => {
-            // 弹出名称输入界面
             this.showNameInputDialog();
         });
     }
@@ -352,24 +345,20 @@ class GameEngine {
             if (mName) this.state.customNames.male = mName;
             if (fName) this.state.customNames.female = fName;
 
-            // 双向奔赴：验证对方奔赴码
             const matchCode = matchCodeInput.value.trim();
             if (matchCode) {
                 this._mutualMatch = this._verifyMatchCode(matchCode, mName, fName);
             }
 
-            // 双向奔赴：同设备检测（另一个视角是否填了一样的名字）
             if (!this._mutualMatch) {
                 this._mutualMatch = this._checkSameDeviceMutualMatch(mName, fName);
             }
 
-            // 保存当前名字，供另一个视角比对
             this._saveNamesForMutualMatch();
             this.saveGame();
             choiceArea.innerHTML = '';
             choiceArea.classList.add('hidden');
 
-            // 根据变量决定结局线路
             const endingScene = this._determineEndingScene();
             this.runScene(endingScene);
         });
@@ -390,15 +379,10 @@ class GameEngine {
         const understanding = this.vs.get('understanding') || 0;
         const initiative = this.vs.get('initiative') || 0;
 
-        // HE 重修于好: 好感高 + 信任高 + 理解高
         if (affection >= 45 && trust >= 25 && understanding >= 15) return 1;
-        // BE1 沉默的螺旋: 好感中 + 信任低 + 主动性低
         if (affection >= 20 && trust < 20 && initiative < 20) return 3;
-        // BE2 陌生人: 好感低 + 信任低
         if (affection < 20 || trust < 0) return 5;
-        // Hidden BE 朋友以上: 好感高 + 信任低 + 理解低 (最痛)
         if (affection >= 35 && trust < 15 && understanding < 10) return 7;
-        // 默认结局: 暧昧不明
         return 3;
     }
 
@@ -406,8 +390,8 @@ class GameEngine {
         const affection = this.vs.get('affection') || 0;
         const trust = this.vs.get('trust') || 0;
         const understanding = this.vs.get('understanding') || 0;
+        const initiative = this.vs.get('initiative') || 0;
 
-        // 根据章节返回不同的关系状态描述
         const chapter = this.state.chapter;
 
         if (chapter <= 2) {
@@ -430,7 +414,6 @@ class GameEngine {
             return '信任已经崩塌，只剩沉默';
         }
 
-        // Chapter 7+
         if (affection >= 40 && trust >= 25 && understanding >= 15) return '经历了风雨，你们依然选择彼此';
         if (affection >= 30 && trust < 15) return '还爱着，但已经无法信任';
         if (affection < 15) return '曾经亲密的人，如今形同陌路';
@@ -444,7 +427,6 @@ class GameEngine {
         const understanding = this.vs.get('understanding') || 0;
         const initiative = this.vs.get('initiative') || 0;
 
-        // Ch1 伏笔 → Ch5/Ch6 体现
         if (chapter >= 5) {
             if (initiative >= 10) {
                 fragments.push('你曾在初遇时选择了主动，这份勇气让后来的你们有了开始。');
@@ -453,7 +435,6 @@ class GameEngine {
             }
         }
 
-        // Ch2 伏笔 → Ch5 体现
         if (chapter >= 5) {
             if (understanding >= 8) {
                 fragments.push('你们曾在靠近时认真倾听彼此，那些了解让信任有了根基。');
@@ -462,7 +443,6 @@ class GameEngine {
             }
         }
 
-        // Ch3 伏笔 → Ch6 体现
         if (chapter >= 6) {
             if (affection >= 30) {
                 fragments.push('表白时的真心不会骗人，那份喜欢是真切的，只是后来忘了怎么表达。');
@@ -471,7 +451,6 @@ class GameEngine {
             }
         }
 
-        // Ch4 伏笔 → Ch7 体现
         if (chapter >= 7) {
             if (understanding >= 15) {
                 fragments.push('热恋时你曾认真看过TA的侧脸，那些专注的时刻，是后来最珍贵的记忆。');
@@ -480,7 +459,6 @@ class GameEngine {
             }
         }
 
-        // Ch5 伏笔 → Ch6/Ch7 体现
         if (chapter >= 6) {
             if (trust >= 15) {
                 fragments.push('误会发生时，你选择了沟通。那一刻的坦诚，是后来所有和解的起点。');
@@ -503,7 +481,6 @@ class GameEngine {
                 i++;
                 const name = this._resolveName(d.name);
 
-                // 使用原始名字检测是否是聊天消息
                 const isCurrentChat = this._isChatName(d.name);
                 const isNextChat = nextD ? this._isChatName(nextD.name) : false;
                 const showTyping = isCurrentChat && isNextChat && d.name !== nextD.name;
@@ -542,7 +519,6 @@ class GameEngine {
     }
 
     showChoices(choices) {
-        // 保存原始选择的 crossFlag 映射
         this._currentChoiceFlags = {};
         choices.forEach((c, idx) => {
             if (c.crossFlag) {
@@ -557,7 +533,6 @@ class GameEngine {
         }));
 
         this.choice.show(processedChoices, (choice, index) => {
-            // 记录关键选择标签
             if (this._currentChoiceFlags && this._currentChoiceFlags[index]) {
                 const flag = this._currentChoiceFlags[index];
                 this._crossFlags[flag] = true;
@@ -568,6 +543,7 @@ class GameEngine {
             if (choice.next !== undefined) {
                 this.runScene(choice.next);
             }
+            this._checkAchievements();
         });
     }
 
@@ -584,9 +560,7 @@ class GameEngine {
     }
 
     showChapterEnd() {
-        // 第八章不在这里处理，有自己的结局流程
         if (this.state.chapter >= 8) {
-            // 保存跨视角标签并标记通关
             this._saveCrossPerspectiveFlags();
             this.crossPerspective.markCompleted(this.state.perspective);
             this._recordEnding();
@@ -594,13 +568,11 @@ class GameEngine {
             return;
         }
 
-        // 保存跨视角标签
         this._saveCrossPerspectiveFlags();
 
         const chapterTitles = ['', '一', '二', '三', '四', '五', '六', '七'];
         const title = `第${chapterTitles[this.state.chapter]}章 完`;
 
-        // 先显示章节结束，然后显示日记，再显示记忆碎片，最后显示情感曲线
         this.dialogue.appendParagraph('', title, () => {
             this._showDiary(() => {
                 this._showMemoryFragments(() => {
@@ -637,7 +609,6 @@ class GameEngine {
             return;
         }
 
-        // 显示记忆碎片标题
         const titlePara = document.createElement('div');
         titlePara.className = 'memory-title';
         titlePara.textContent = '—— 过往回响 ——';
@@ -664,7 +635,6 @@ class GameEngine {
             return;
         }
 
-        // 添加日记标题
         const titlePara = document.createElement('div');
         titlePara.className = 'diary-title';
         titlePara.textContent = '—— 日记 ——';
@@ -675,7 +645,6 @@ class GameEngine {
         this._diaryTimers = [];
         this._diaryParas = [];
 
-        // 绑定点击跳过
         const reader = document.getElementById('novel-reader');
         this._diaryClickHandler = () => {
             if (this._diaryTyping) {
@@ -683,7 +652,6 @@ class GameEngine {
             }
         };
         reader.addEventListener('click', this._diaryClickHandler);
-        // 显示点击提示
         this.dialogue.tapHint.classList.remove('hidden');
 
         let i = 0;
@@ -698,11 +666,9 @@ class GameEngine {
                 this._diaryParas.push(para);
                 this.dialogue._scrollToBottom();
 
-                // 打字机效果
                 let j = 0;
                 const type = () => {
                     if (this._diarySkip) {
-                        // 跳过所有剩余日记内容
                         this._diaryParas.forEach(p => {
                             const fullText = p.dataset.fullText || '';
                             if (fullText) p.textContent = fullText;
@@ -724,7 +690,6 @@ class GameEngine {
                 para.dataset.fullText = text;
                 type();
             } else {
-                // 日记结束分隔线
                 const endLine = document.createElement('div');
                 endLine.className = 'diary-end';
                 endLine.textContent = '——';
@@ -892,7 +857,6 @@ class GameEngine {
         const otherCompleted = this.crossPerspective.isCompleted(other);
 
         this.dialogue.appendParagraph('', '故事到此结束。', () => {
-            // 双向奔赴彩蛋
             if (this._mutualMatch) {
                 this._showMutualMatchEasterEgg(() => {
                     this._showFinalEndChoices(otherCompleted, other);
@@ -924,7 +888,6 @@ class GameEngine {
             { text: '保存进度', next: 'save' }
         ];
 
-        // 如果未触发双向奔赴，显示奔赴码供分享
         if (!this._mutualMatch) {
             choices.unshift({
                 text: '生成奔赴码，邀请TA',
@@ -934,6 +897,7 @@ class GameEngine {
 
         this.choice.show(choices, (choice) => {
             if (choice.next === 'menu') {
+                this.audio.stopBGM();
                 location.reload();
             } else if (choice.next === 'save') {
                 this.saveGame();
@@ -964,7 +928,6 @@ class GameEngine {
             document.getElementById('perspective-select').classList.add('hidden');
             document.getElementById('settings-menu').classList.add('hidden');
             this.loadChapter(data.chapter);
-            // 恢复存档时的具体场景
             if (this.state.sceneIndex > 0 && this.chapterData && this.state.sceneIndex < this.chapterData.scenes.length) {
                 this.runScene(this.state.sceneIndex);
             }
@@ -973,7 +936,6 @@ class GameEngine {
         }
     }
 
-    // ===== 收集册 =====
     _showCollection() {
         const modal = document.getElementById('collection-modal');
         modal.classList.remove('hidden');
@@ -982,14 +944,17 @@ class GameEngine {
 
     _updateCollectionUI() {
         const endings = this.state.endings || [];
+        const achievements = this.state.achievements || [];
         const uniqueEndings = [...new Set(endings)];
-        const total = 4;
-        const unlocked = uniqueEndings.length;
+        const totalEndings = 4;
+        const totalAchievements = 8;
+        const unlockedEndings = uniqueEndings.length;
+        const unlockedAchievements = achievements.length;
 
         const fill = document.getElementById('collection-progress-fill');
         const text = document.getElementById('collection-progress-text');
-        if (fill) fill.style.width = `${(unlocked / total) * 100}%`;
-        if (text) text.textContent = `已收集 ${unlocked} / ${total}`;
+        if (fill) fill.style.width = `${((unlockedEndings + unlockedAchievements) / (totalEndings + totalAchievements)) * 100}%`;
+        if (text) text.textContent = `已收集 ${unlockedEndings + unlockedAchievements} / ${totalEndings + totalAchievements}`;
 
         const endingMap = {
             'he': { name: '重修于好', icon: '✦', hint: '好感度高于45，信任高于25，理解高于15' },
@@ -1020,9 +985,114 @@ class GameEngine {
                 if (hint) hint.textContent = '???';
             }
         });
+
+        const achievementMap = {
+            'first_play': { name: '初次相遇', icon: '🌸', hint: '开始你的第一次游玩' },
+            'chapter3': { name: '心动时刻', icon: '💗', hint: '完成第三章' },
+            'high_affection': { name: '深情厚爱', icon: '❤️', hint: '好感度达到45以上' },
+            'high_trust': { name: '彼此信任', icon: '🤝', hint: '信任度达到25以上' },
+            'both_perspectives': { name: '双面人生', icon: '🔄', hint: '通关两个视角' },
+            'he': { name: '圆满结局', icon: '✨', hint: '达成Happy Ending' },
+            'all_endings': { name: '全结局收集', icon: '🏆', hint: '收集所有结局' },
+            'mutual_match': { name: '双向奔赴', icon: '💞', hint: '触发双向奔赴彩蛋' }
+        };
+
+        document.querySelectorAll('.achievement-card').forEach(card => {
+            const key = card.dataset.achievement;
+            const isUnlocked = achievements.includes(key);
+            card.classList.toggle('locked', !isUnlocked);
+            card.classList.toggle('unlocked', isUnlocked);
+
+            const icon = card.querySelector('.card-icon');
+            const title = card.querySelector('h3');
+            const hint = card.querySelector('.card-hint');
+
+            if (isUnlocked && achievementMap[key]) {
+                if (icon) icon.textContent = achievementMap[key].icon;
+                if (title) title.textContent = achievementMap[key].name;
+                if (hint) hint.textContent = achievementMap[key].hint;
+            } else {
+                if (icon) icon.textContent = '?';
+                if (title) title.textContent = achievementMap[key] ? achievementMap[key].name : '???';
+                if (hint) hint.textContent = '???';
+            }
+        });
     }
 
-    // ===== 首次引导 =====
+    _checkAchievements() {
+        const achievements = this.state.achievements || [];
+        const affection = this.vs.get('affection') || 0;
+        const trust = this.vs.get('trust') || 0;
+        const chapter = this.state.chapter;
+
+        const checkAndUnlock = (key) => {
+            if (!achievements.includes(key)) {
+                achievements.push(key);
+                this._showAchievementPopup(key);
+            }
+        };
+
+        checkAndUnlock('first_play');
+
+        if (chapter >= 3) checkAndUnlock('chapter3');
+        if (affection >= 45) checkAndUnlock('high_affection');
+        if (trust >= 25) checkAndUnlock('high_trust');
+
+        const other = this.state.perspective === 'male' ? 'female' : 'male';
+        if (this.crossPerspective.isCompleted(other)) {
+            checkAndUnlock('both_perspectives');
+        }
+
+        if (this._mutualMatch) {
+            checkAndUnlock('mutual_match');
+        }
+
+        const endings = this.state.endings || [];
+        if (endings.includes('he')) checkAndUnlock('he');
+        if (endings.length >= 4) checkAndUnlock('all_endings');
+
+        this.state.achievements = achievements;
+        this.saveGame();
+    }
+
+    _showAchievementPopup(key) {
+        const achievementMap = {
+            'first_play': { name: '初次相遇', icon: '🌸' },
+            'chapter3': { name: '心动时刻', icon: '💗' },
+            'high_affection': { name: '深情厚爱', icon: '❤️' },
+            'high_trust': { name: '彼此信任', icon: '🤝' },
+            'both_perspectives': { name: '双面人生', icon: '🔄' },
+            'he': { name: '圆满结局', icon: '✨' },
+            'all_endings': { name: '全结局收集', icon: '🏆' },
+            'mutual_match': { name: '双向奔赴', icon: '💞' }
+        };
+
+        const achievement = achievementMap[key];
+        if (!achievement) return;
+
+        const popup = document.createElement('div');
+        popup.className = 'achievement-popup';
+        popup.innerHTML = `
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-info">
+                <div class="achievement-title">成就解锁</div>
+                <div class="achievement-name">${achievement.name}</div>
+            </div>
+        `;
+        document.body.appendChild(popup);
+
+        setTimeout(() => {
+            popup.classList.add('achievement-popup-show');
+        }, 10);
+
+        setTimeout(() => {
+            popup.classList.remove('achievement-popup-show');
+            setTimeout(() => {
+                popup.remove();
+            }, 500);
+        }, 3000);
+    }
+
     _showTutorial() {
         this._tutorialStep = 1;
         document.getElementById('tutorial-overlay').classList.remove('hidden');
@@ -1049,7 +1119,6 @@ class GameEngine {
         if (btn) btn.textContent = this._tutorialStep === 3 ? '开始游戏' : '下一步';
     }
 
-    // ===== 章节情感曲线 =====
     _recordChapterStartVars() {
         this._chapterStartVars = {
             affection: this.vs.get('affection') || 0,
@@ -1104,7 +1173,6 @@ class GameEngine {
         if (modal) modal.classList.remove('hidden');
     }
 
-    // ===== 结局记录 =====
     _recordEnding() {
         const sceneIdx = this._determineEndingScene();
         const keyMap = { 1: 'he', 3: 'be1', 5: 'be2', 7: 'hidden' };
@@ -1112,10 +1180,10 @@ class GameEngine {
         if (!this.state.endings.includes(key)) {
             this.state.endings.push(key);
         }
+        this._checkAchievements();
         this.saveGame();
     }
 
-    // ===== 双向奔赴系统 =====
     _generateMatchCode(male, female) {
         try {
             return btoa(encodeURIComponent(male + '|' + female));
@@ -1199,7 +1267,6 @@ class GameEngine {
                 copyBtn.textContent = '已复制';
                 setTimeout(() => { copyBtn.textContent = '复制奔赴码'; }, 2000);
             }).catch(() => {
-                // fallback
                 const ta = document.createElement('textarea');
                 ta.value = code;
                 document.body.appendChild(ta);
