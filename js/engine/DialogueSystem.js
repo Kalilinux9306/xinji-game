@@ -1,5 +1,5 @@
 class DialogueSystem {
-    constructor() {
+    constructor(audioManager) {
         this.contentEl = document.getElementById('novel-content');
         this.tapHint = document.getElementById('tap-hint');
         this.typing = false;
@@ -10,6 +10,8 @@ class DialogueSystem {
         document.getElementById('novel-reader').addEventListener('click', this._clickHandler);
         this._inChatMode = false;
         this._lastChatSender = null;
+        this.audio = audioManager;
+        this._typeSoundTimer = null;
     }
 
     clear() {
@@ -21,6 +23,7 @@ class DialogueSystem {
         this._lastChatSender = null;
         if (this._typeTimer) clearTimeout(this._typeTimer);
         if (this._delayTimer) clearTimeout(this._delayTimer);
+        if (this._typeSoundTimer) clearTimeout(this._typeSoundTimer);
     }
 
     appendParagraph(name, text, onComplete, options = {}) {
@@ -28,14 +31,12 @@ class DialogueSystem {
         const originalName = options.originalName || name;
         const cssClass = options.cssClass || null;
 
-        // 如果进入聊天模式，添加聊天容器
         if (isChat && !this._inChatMode) {
             this._enterChatMode();
         } else if (!isChat && this._inChatMode) {
             this._exitChatMode();
         }
 
-        // 如果聊天对象切换了，添加"对方正在输入"效果
         if (isChat && this._lastChatSender && this._lastChatSender !== originalName && options.showTyping) {
             this._showTypingIndicator(() => {
                 this._appendContent(name, text, onComplete, isChat, originalName, cssClass);
@@ -75,7 +76,7 @@ class DialogueSystem {
         container.appendChild(typingEl);
         this._scrollToBottom();
 
-        const delay = 1500 + Math.random() * 1500; // 1.5-3秒随机延迟
+        const delay = 1500 + Math.random() * 1500;
         this._delayTimer = setTimeout(() => {
             typingEl.remove();
             if (onDone) onDone();
@@ -98,7 +99,6 @@ class DialogueSystem {
     }
 
     _createParagraph(name, text, isChat, originalName, cssClass) {
-        // 聊天消息使用气泡样式
         if (isChat) {
             const bubble = document.createElement('div');
             const isSelf = originalName === '你';
@@ -107,7 +107,6 @@ class DialogueSystem {
             const cleanText = text.replace(/[「」]/g, '');
             bubble.dataset.fullText = cleanText;
 
-            // 发送者名字（仅在切换发送者时显示）
             if (this._lastChatSender !== originalName) {
                 const senderLabel = document.createElement('div');
                 senderLabel.className = 'chat-sender-label';
@@ -122,11 +121,9 @@ class DialogueSystem {
             return bubble;
         }
 
-        // 普通段落
         const para = document.createElement('p');
         para.className = 'novel-para';
 
-        // 自定义 CSS 类（用于真相段落等特殊样式）
         if (cssClass) {
             para.classList.add(cssClass);
             para.dataset.fullText = text;
@@ -169,13 +166,27 @@ class DialogueSystem {
         let i = 0;
         const type = () => {
             if (i < fullText.length) {
+                const char = fullText[i];
                 if (isChat) {
                     const textSpan = para.querySelector('.chat-text');
-                    if (textSpan) textSpan.textContent += fullText[i];
+                    if (textSpan) {
+                        const span = document.createElement('span');
+                        span.textContent = char;
+                        span.className = 'type-char';
+                        textSpan.appendChild(span);
+                    }
                 } else {
-                    para.textContent += fullText[i];
+                    const span = document.createElement('span');
+                    span.textContent = char;
+                    span.className = 'type-char';
+                    para.appendChild(span);
                 }
                 i++;
+
+                if (i % 5 === 0 && this.audio) {
+                    this.audio.playSFX('type');
+                }
+
                 this._typeTimer = setTimeout(type, this.typingSpeed);
                 if (i % 3 === 0) this._scrollToBottom();
             } else {
@@ -223,5 +234,6 @@ class DialogueSystem {
         document.getElementById('novel-reader').removeEventListener('click', this._clickHandler);
         if (this._typeTimer) clearTimeout(this._typeTimer);
         if (this._delayTimer) clearTimeout(this._delayTimer);
+        if (this._typeSoundTimer) clearTimeout(this._typeSoundTimer);
     }
 }
