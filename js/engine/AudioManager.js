@@ -1,6 +1,6 @@
 class AudioManager {
     constructor() {
-        this.bgmVolume = 0.25;
+        this.bgmVolume = 0.3;
         this.sfxVolume = 0.5;
         this.muted = false;
         this.currentBgmKey = null;
@@ -103,32 +103,19 @@ class AudioManager {
         const ctx = this._ensureContext();
         if (!ctx) return null;
 
-        const chordProgressions = {
-            1: [[261.63, 329.63, 392.00, 440.00], [293.66, 349.23, 440.00, 493.88], [329.63, 392.00, 493.88, 554.37], [293.66, 349.23, 440.00, 493.88]],
-            2: [[293.66, 349.23, 440.00, 493.88], [329.63, 392.00, 493.88, 554.37], [349.23, 415.30, 523.25, 587.33], [329.63, 392.00, 493.88, 554.37]],
-            3: [[329.63, 392.00, 493.88, 554.37], [349.23, 415.30, 523.25, 587.33], [392.00, 466.16, 587.33, 659.25], [349.23, 415.30, 523.25, 587.33]],
-            4: [[392.00, 466.16, 587.33, 659.25], [440.00, 523.25, 659.25, 739.99], [493.88, 587.33, 739.99, 830.61], [440.00, 523.25, 659.25, 739.99]],
-            5: [[329.63, 392.00, 493.88, 554.37], [349.23, 415.30, 523.25, 587.33], [293.66, 349.23, 440.00, 493.88], [261.63, 329.63, 392.00, 440.00]],
-            6: [[293.66, 349.23, 440.00, 493.88], [261.63, 329.63, 392.00, 440.00], [246.94, 293.66, 369.99, 415.30], [220.00, 261.63, 329.63, 392.00]],
-            7: [[220.00, 261.63, 329.63, 392.00], [196.00, 246.94, 293.66, 349.23], [174.61, 220.00, 261.63, 329.63], [196.00, 246.94, 293.66, 349.23]],
-            8: [[329.63, 392.00, 493.88, 554.37], [392.00, 440.00, 587.33, 659.25], [440.00, 523.25, 659.25, 739.99], [523.25, 659.25, 783.99, 880.00]]
+        const styles = {
+            1: { name: 'romantic', chordType: 'sine', melodyType: 'sine', chordInterval: 3500, noteInterval: 400, baseVolume: 0.08, melodyVolume: 0.1, chords: [[261.63, 329.63, 392.00, 440.00], [293.66, 349.23, 440.00, 493.88], [329.63, 392.00, 493.88, 554.37], [293.66, 349.23, 440.00, 493.88]], melody: [392.00, 440.00, 493.88, 523.25, 493.88, 440.00, 392.00, 349.23] },
+            2: { name: 'sweet', chordType: 'triangle', melodyType: 'sine', chordInterval: 3000, noteInterval: 350, baseVolume: 0.1, melodyVolume: 0.12, chords: [[293.66, 349.23, 440.00, 493.88], [329.63, 392.00, 493.88, 554.37], [349.23, 415.30, 523.25, 587.33], [329.63, 392.00, 493.88, 554.37]], melody: [440.00, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00, 392.00] },
+            3: { name: 'warm', chordType: 'triangle', melodyType: 'triangle', chordInterval: 2800, noteInterval: 300, baseVolume: 0.12, melodyVolume: 0.14, chords: [[329.63, 392.00, 493.88, 554.37], [349.23, 415.30, 523.25, 587.33], [392.00, 466.16, 587.33, 659.25], [349.23, 415.30, 523.25, 587.33]], melody: [493.88, 523.25, 587.33, 659.25, 587.33, 523.25, 493.88, 440.00] },
+            4: { name: 'joyful', chordType: 'sine', melodyType: 'triangle', chordInterval: 2500, noteInterval: 250, baseVolume: 0.1, melodyVolume: 0.15, chords: [[392.00, 466.16, 587.33, 659.25], [440.00, 523.25, 659.25, 739.99], [493.88, 587.33, 739.99, 830.61], [440.00, 523.25, 659.25, 739.99]], melody: [587.33, 659.25, 739.99, 783.99, 739.99, 659.25, 587.33, 523.25] },
+            5: { name: 'tense', chordType: 'sawtooth', melodyType: 'sine', chordInterval: 2000, noteInterval: 350, baseVolume: 0.08, melodyVolume: 0.06, chords: [[329.63, 392.00, 493.88, 554.37], [311.13, 369.99, 466.16, 523.25], [293.66, 349.23, 440.00, 493.88], [261.63, 329.63, 392.00, 440.00]], melody: [440.00, 466.16, 493.88, 466.16, 440.00, 415.30, 392.00, 415.30] },
+            6: { name: 'sad', chordType: 'triangle', melodyType: 'sine', chordInterval: 4500, noteInterval: 550, baseVolume: 0.05, melodyVolume: 0.07, chords: [[261.63, 329.63, 392.00, 440.00], [246.94, 293.66, 369.99, 415.30], [220.00, 261.63, 329.63, 392.00], [196.00, 246.94, 293.66, 349.23]], melody: [392.00, 349.23, 293.66, 261.63, 293.66, 349.23, 392.00, 415.30] },
+            7: { name: 'heartbroken', chordType: 'sawtooth', melodyType: 'triangle', chordInterval: 5000, noteInterval: 600, baseVolume: 0.04, melodyVolume: 0.05, chords: [[220.00, 261.63, 329.63, 392.00], [196.00, 246.94, 293.66, 349.23], [174.61, 220.00, 261.63, 329.63], [164.81, 196.00, 246.94, 293.66]], melody: [349.23, 293.66, 261.63, 220.00, 196.00, 220.00, 261.63, 293.66] },
+            8: { name: 'hopeful', chordType: 'sine', melodyType: 'sine', chordInterval: 4000, noteInterval: 450, baseVolume: 0.1, melodyVolume: 0.12, chords: [[329.63, 392.00, 493.88, 554.37], [392.00, 440.00, 587.33, 659.25], [440.00, 523.25, 659.25, 739.99], [523.25, 659.25, 783.99, 880.00]], melody: [523.25, 587.33, 659.25, 739.99, 783.99, 739.99, 659.25, 587.33] }
         };
 
-        const melodyNotes = {
-            1: [392.00, 440.00, 493.88, 523.25, 493.88, 440.00, 392.00, 349.23],
-            2: [440.00, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00, 392.00],
-            3: [493.88, 523.25, 587.33, 659.25, 587.33, 523.25, 493.88, 440.00],
-            4: [587.33, 659.25, 739.99, 783.99, 739.99, 659.25, 587.33, 523.25],
-            5: [523.25, 493.88, 440.00, 392.00, 440.00, 493.88, 523.25, 587.33],
-            6: [440.00, 392.00, 349.23, 293.66, 349.23, 392.00, 440.00, 493.88],
-            7: [392.00, 349.23, 293.66, 261.63, 293.66, 349.23, 392.00, 440.00],
-            8: [523.25, 587.33, 659.25, 739.99, 783.99, 739.99, 659.25, 587.33]
-        };
-
-        const progression = chordProgressions[chapter] || chordProgressions[1];
-        const melody = melodyNotes[chapter] || melodyNotes[1];
-        const chordInterval = 4000;
-        const noteInterval = 500;
+        const style = styles[chapter] || styles[1];
+        const { chordType, melodyType, chordInterval, noteInterval, baseVolume, melodyVolume, chords, melody } = style;
         
         let chordIndex = 0;
         let melodyIndex = 0;
@@ -138,12 +125,12 @@ class AudioManager {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 
-                osc.type = 'triangle';
+                osc.type = chordType;
                 osc.frequency.value = freq;
                 
                 const delay = idx * 0.05;
                 gain.gain.setValueAtTime(0, time + delay);
-                gain.gain.linearRampToValueAtTime(this.bgmVolume * 0.06, time + delay + 0.2);
+                gain.gain.linearRampToValueAtTime(this.bgmVolume * baseVolume, time + delay + 0.2);
                 gain.gain.exponentialRampToValueAtTime(0.001, time + chordInterval / 1000);
                 
                 osc.connect(gain);
@@ -158,12 +145,12 @@ class AudioManager {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             
-            osc.type = 'sine';
+            osc.type = melodyType;
             osc.frequency.value = note;
             
             gain.gain.setValueAtTime(0, time);
-            gain.gain.linearRampToValueAtTime(this.bgmVolume * 0.08, time + 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + noteInterval / 1000 - 0.1);
+            gain.gain.linearRampToValueAtTime(this.bgmVolume * melodyVolume, time + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + noteInterval / 1000 - 0.05);
             
             osc.connect(gain);
             gain.connect(ctx.destination);
@@ -176,16 +163,17 @@ class AudioManager {
             if (this.muted || !this.currentBgmKey) return;
             
             const time = ctx.currentTime;
-            const chord = progression[chordIndex % progression.length];
+            const chord = chords[chordIndex % chords.length];
             playChord(chord, time);
             
-            for (let i = 0; i < 8; i++) {
+            const noteCount = Math.floor(chordInterval / noteInterval);
+            for (let i = 0; i < noteCount; i++) {
                 const note = melody[(melodyIndex + i) % melody.length];
                 playMelodyNote(note, time + i * noteInterval / 1000);
             }
             
             chordIndex++;
-            melodyIndex += 8;
+            melodyIndex += noteCount;
             this._bgmTimer = setTimeout(schedule, chordInterval);
         };
 
