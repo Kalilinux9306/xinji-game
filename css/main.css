@@ -121,8 +121,6 @@ body {
     color: #3d2b1f;
     text-indent: 2em;
     margin-bottom: 10px;
-    opacity: 0;
-    animation: fadeInParagraph 0.5s ease forwards;
     position: relative;
 }
 
@@ -132,8 +130,6 @@ body {
     line-height: 2.0;
     color: #3d2b1f;
     margin-bottom: 10px;
-    opacity: 0;
-    animation: fadeInParagraph 0.5s ease forwards;
 }
 
 .novel-dialogue::before {
